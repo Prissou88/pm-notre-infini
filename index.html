@@ -277,9 +277,10 @@ nav button.active{outline:2px solid #ff91bd}
     if(!titre)return;
 
     const texte=titre.textContent.toLowerCase();
-    const accueil=texte.includes('accueil') ||
-                  texte.includes('notre infini') ||
-                  texte.includes('bienvenue');
+const accueil=texte.includes('accueil') ||
+              texte.includes('notre infini') ||
+              texte.includes('bienvenue') ||
+              texte.includes('notre histoire');
 
     if(!accueil)return;
     if(cible.querySelector('.pm-amour'))return;
