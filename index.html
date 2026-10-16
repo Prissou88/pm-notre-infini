@@ -40,6 +40,474 @@ nav button{flex:1;white-space:nowrap;font-size:12px;padding:10px}
 <div id="feedback"></div>
 <main id="app">Chargement de notre univers...</main>
 
+/* =========================================
+   P&M - EXTENSION DE NOTRE INFINI
+   Tribunal, photos et réconciliation
+   ========================================= */
+
+const pmAncienAfficher = afficher;
+const pmAncienContenu = contenu;
+
+afficher = async function () {
+  await pmAncienAfficher();
+
+  const nav = document.querySelector("nav");
+  if (!nav) return;
+
+  const nouveaux = [
+    ["photos", "📸 Photos"],
+    ["tribunal", "⚖️ Tribunal"],
+    ["reconciliation", "💌 Réconciliation"]
+  ];
+
+  for (const [id, nom] of nouveaux) {
+    if (nav.querySelector('[data-tab="' + id + '"]')) continue;
+
+    const bouton = document.createElement("button");
+    bouton.textContent = nom;
+    bouton.dataset.tab = id;
+
+    bouton.onclick = async () => {
+      onglet = id;
+      await contenu();
+    };
+
+    nav.appendChild(bouton);
+  }
+};
+
+contenu = async function () {
+  if (onglet === "photos") {
+    await pmPhotos();
+    return;
+  }
+
+  if (onglet === "tribunal") {
+    await pmTribunal();
+    return;
+  }
+
+  if (onglet === "reconciliation") {
+    await pmReconciliation();
+    return;
+  }
+
+  await pmAncienContenu();
+};
+
+/* PHOTOS PRIVEES */
+
+async function pmPhotos() {
+  const zone = document.getElementById("contenu");
+  if (!zone) return;
+
+  zone.innerHTML = '<div class="card">Chargement des photos...</div>';
+
+  try {
+    const { data, error } = await db
+      .from("pm_events")
+      .select("id,sender_id,media_path,created_at")
+      .eq("couple_id", couple)
+      .eq("type", "photo")
+      .order("created_at", { ascending: false })
+      .limit(40);
+
+    if (error) throw error;
+
+    zone.innerHTML = `
+      <div class="card">
+        <h2>📸 Notre album privé</h2>
+        <p>Nos souvenirs, rien qu'à nous deux ❤️</p>
+        <input id="pmPhotoFichier" type="file"
+          accept="image/jpeg,image/png,image/webp">
+        <button id="pmPhotoAjouter">Ajouter une photo 💕</button>
+        <p class="notice">
+          Images JPG, PNG ou WebP, 10 Mo maximum.
+          Les photos sont stockées dans un espace privé.
+        </p>
+      </div>
+      <div id="pmGalerie"></div>
+    `;
+
+    document.getElementById("pmPhotoAjouter").onclick =
+      pmAjouterPhoto;
+
+    const galerie = document.getElementById("pmGalerie");
+
+    if (!data?.length) {
+      galerie.textContent = "Aucune photo pour le moment ❤️";
+      return;
+    }
+
+    for (const photo of data) {
+      if (!photo.media_path) continue;
+
+      const { data: lien, error: erreurLien } =
+        await db.storage.from("pm-photos")
+          .createSignedUrl(photo.media_path, 300);
+
+      if (erreurLien || !lien?.signedUrl) continue;
+
+      const carte = document.createElement("div");
+      carte.className = "card";
+
+      const image = document.createElement("img");
+      image.src = lien.signedUrl;
+      image.alt = "Notre souvenir";
+      image.style.width = "100%";
+      image.style.borderRadius = "15px";
+      image.style.display = "block";
+
+      const legende = document.createElement("p");
+      legende.className = "notice";
+      legende.textContent =
+        new Date(photo.created_at).toLocaleString("fr-FR");
+
+      carte.append(image, legende);
+      galerie.appendChild(carte);
+    }
+
+  } catch (e) {
+    erreur(e);
+    zone.innerHTML =
+      '<div class="card">Impossible de charger les photos.</div>';
+  }
+}
+
+async function pmAjouterPhoto() {
+  const fichier = document.getElementById("pmPhotoFichier")?.files[0];
+
+  if (!fichier) {
+    info("Choisis une photo ❤️");
+    return;
+  }
+
+  const types = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!types.includes(fichier.type)) {
+    info("Choisis une image JPG, PNG ou WebP.");
+    return;
+  }
+
+  if (fichier.size > 10 * 1024 * 1024) {
+    info("La photo dépasse 10 Mo.");
+    return;
+  }
+
+  const extension = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp"
+  }[fichier.type];
+
+  const chemin = couple + "/" + user.id + "/" +
+    crypto.randomUUID() + "." + extension;
+
+  const bouton = document.getElementById("pmPhotoAjouter");
+  bouton.disabled = true;
+
+  try {
+    const { error: uploadError } = await db.storage
+      .from("pm-photos")
+      .upload(chemin, fichier, {
+        contentType: fichier.type,
+        upsert: false
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { error: eventError } = await db
+      .from("pm_events")
+      .insert({
+        couple_id: couple,
+        sender_id: user.id,
+        type: "photo",
+        media_path: chemin
+      });
+
+    if (eventError) throw eventError;
+
+    info("Photo ajoutée ❤️");
+    await pmPhotos();
+
+  } catch (e) {
+    erreur(e);
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+/* TRIBUNAL DE L'AMOUR */
+
+async function pmTribunal() {
+  const zone = document.getElementById("contenu");
+  if (!zone) return;
+
+  zone.innerHTML = '<div class="card">Ouverture du tribunal...</div>';
+
+  try {
+    const { data, error } = await db
+      .from("pm_disputes")
+      .select("id,titre,status,created_at")
+      .eq("couple_id", couple)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error) throw error;
+
+    zone.innerHTML = `
+      <div class="card">
+        <h2>⚖️ Tribunal de l'Amour</h2>
+        <p>
+          Ici, on écoute les deux versions,
+          on discute et on cherche la paix. ❤️
+        </p>
+        <input id="pmTitreAffaire"
+          maxlength="150"
+          placeholder="Sujet de notre désaccord">
+        <button id="pmCreerAffaire">
+          Ouvrir une affaire ⚖️
+        </button>
+      </div>
+      <div id="pmAffaires"></div>
+    `;
+
+    document.getElementById("pmCreerAffaire").onclick = async () => {
+      const titre = document
+        .getElementById("pmTitreAffaire").value.trim();
+
+      try {
+        await rpc("pm_create_dispute", {
+          p_titre: titre || "Notre désaccord"
+        });
+
+        info("Affaire ouverte ⚖️");
+        await pmTribunal();
+
+      } catch (e) {
+        erreur(e);
+      }
+    };
+
+    const liste = document.getElementById("pmAffaires");
+
+    if (!data?.length) {
+      liste.innerHTML =
+        '<div class="card">Aucune affaire. Que la paix règne ! ❤️</div>';
+      return;
+    }
+
+    for (const affaire of data) {
+      const carte = document.createElement("div");
+      carte.className = "card";
+
+      const titre = document.createElement("h2");
+      titre.textContent = "⚖️ " + affaire.titre;
+
+      const statut = document.createElement("p");
+      statut.textContent = affaire.status === "open"
+        ? "🟠 Affaire en cours"
+        : "💚 Affaire résolue";
+
+      const ouvrir = document.createElement("button");
+      ouvrir.textContent = "Voir les échanges";
+
+      ouvrir.onclick = () => pmOuvrirAffaire(affaire);
+
+      carte.append(titre, statut, ouvrir);
+      liste.appendChild(carte);
+    }
+
+  } catch (e) {
+    erreur(e);
+    zone.innerHTML =
+      '<div class="card">Impossible de charger le tribunal.</div>';
+  }
+}
+
+async function pmOuvrirAffaire(affaire) {
+  const zone = document.getElementById("contenu");
+  if (!zone) return;
+
+  zone.innerHTML = '<div class="card">Chargement...</div>';
+
+  try {
+    const { data, error } = await db
+      .from("pm_dispute_messages")
+      .select("sender_id,contenu,created_at")
+      .eq("dispute_id", affaire.id)
+      .order("created_at", { ascending: true })
+      .limit(150);
+
+    if (error) throw error;
+
+    zone.innerHTML = `
+      <div class="card">
+        <button id="pmRetourTribunal" class="secondary">
+          ← Retour au tribunal
+        </button>
+        <h2>⚖️ ${esc(affaire.titre)}</h2>
+        <p class="notice">
+          Chaque partenaire peut s'exprimer.
+          On se respecte, même en désaccord.
+        </p>
+        <div id="pmParoles"></div>
+        ${affaire.status === "open" ? `
+          <textarea id="pmMessageAffaire"
+            maxlength="5000"
+            placeholder="Exprime ce que tu ressens..."></textarea>
+          <button id="pmEnvoyerAffaire">
+            Envoyer au tribunal 💬
+          </button>
+          <button id="pmCloreAffaire" class="secondary">
+            Réconciliation, clore l'affaire 💚
+          </button>
+        ` : '<p>💚 Cette affaire est résolue.</p>'}
+      </div>
+    `;
+
+    document.getElementById("pmRetourTribunal").onclick =
+      pmTribunal;
+
+    const paroles = document.getElementById("pmParoles");
+
+    for (const message of data || []) {
+      const div = document.createElement("div");
+      div.className = "msg" +
+        (message.sender_id === user.id ? " mine" : "");
+
+      const auteur = document.createElement("small");
+      auteur.textContent =
+        message.sender_id === user.id ? "Moi" : "Autre participant";
+
+      const texte = document.createElement("div");
+      texte.textContent = message.contenu;
+
+      div.append(auteur, texte);
+      paroles.appendChild(div);
+    }
+
+    const envoyer = document.getElementById("pmEnvoyerAffaire");
+
+    if (envoyer) envoyer.onclick = async () => {
+      const contenu = document
+        .getElementById("pmMessageAffaire").value.trim();
+
+      if (!contenu) return;
+
+      try {
+        await rpc("pm_send_dispute_message", {
+          p_dispute: affaire.id,
+          p_contenu: contenu
+        });
+
+        await pmOuvrirAffaire(affaire);
+
+      } catch (e) {
+        erreur(e);
+      }
+    };
+
+    const clore = document.getElementById("pmCloreAffaire");
+
+    if (clore) clore.onclick = async () => {
+      if (!confirm("Clore cette affaire ?")) return;
+
+      try {
+        await rpc("pm_resolve_dispute", {
+          p_dispute: affaire.id
+        });
+
+        info("Affaire clôturée 💚");
+        await pmTribunal();
+
+      } catch (e) {
+        erreur(e);
+      }
+    };
+
+  } catch (e) {
+    erreur(e);
+  }
+}
+
+/* RECONCILIATION */
+
+async function pmReconciliation() {
+  const zone = document.getElementById("contenu");
+  if (!zone) return;
+
+  zone.innerHTML = `
+    <div class="card">
+      <h2>💌 Notre réconciliation</h2>
+      <p>
+        Même quand les mots dépassent nos pensées,
+        notre histoire mérite qu'on se parle.
+      </p>
+      <textarea id="pmMotDoux"
+        maxlength="3000"
+        placeholder="Écris un message pour retrouver le sourire..."></textarea>
+      <button id="pmEnvoyerPardon">
+        Envoyer un mot de paix ❤️
+      </button>
+    </div>
+    <div class="card">
+      <h2>🕊️ Faire retomber la tension</h2>
+      <p>
+        Désactive tes propres modes de jalousie
+        et de prise de tête.
+      </p>
+      <button id="pmPaix">Je choisis la paix 💚</button>
+    </div>
+  `;
+
+  document.getElementById("pmEnvoyerPardon").onclick = async () => {
+    const texte = document
+      .getElementById("pmMotDoux").value.trim();
+
+    if (!texte) {
+      info("Écris d'abord ton petit mot ❤️");
+      return;
+    }
+
+    try {
+      const { error } = await db.from("pm_events").insert({
+        couple_id: couple,
+        sender_id: user.id,
+        type: "message",
+        contenu: "💌 Réconciliation\n" + texte
+      });
+
+      if (error) throw error;
+
+      info("Ton mot doux est envoyé ❤️");
+      document.getElementById("pmMotDoux").value = "";
+
+    } catch (e) {
+      erreur(e);
+    }
+  };
+
+  document.getElementById("pmPaix").onclick = async () => {
+    try {
+      await rpc("pm_set_mode", {
+        p_mode: "jalousie",
+        p_actif: false
+      });
+
+      await rpc("pm_set_mode", {
+        p_mode: "prise_de_tete",
+        p_actif: false
+      });
+
+      info("Tes modes sont désactivés 🕊️");
+
+    } catch (e) {
+      erreur(e);
+    }
+  };
+}
+
 <script type="module">
 import {createClient} from
 'https://esm.sh/@supabase/supabase-js@2';
