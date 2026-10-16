@@ -270,8 +270,9 @@ nav button.active{outline:2px solid #ff91bd}
   `;
 
   function ajouterCoeur(){
-    const cible=document.getElementById('contenu');
-    if(!cible)return;
+
+    const cible=document.getElementById('app');
+     if(!cible)return;
 
     const titre=cible.querySelector('h1,h2');
     if(!titre)return;
@@ -291,11 +292,10 @@ const accueil=texte.includes('accueil') ||
   const observateur=new MutationObserver(ajouterCoeur);
 
   function demarrer(){
-    const cible=document.getElementById('contenu');
-    if(!cible)return;
+const cible=document.getElementById('app');
     observateur.observe(cible,{
       childList:true,
-      subtree:false
+      subtree:true
     });
     ajouterCoeur();
   }
