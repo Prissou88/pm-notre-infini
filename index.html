@@ -719,6 +719,22 @@ const {data:menottes,error:mh}=await db.from('pm_handcuffs')
 .select('*').eq('couple_id',couple).maybeSingle();
 if(mh)throw mh;
 el.innerHTML=`
+
+<section class="pm-amour" style="text-align:center;padding:22px 12px;margin:0 auto 22px">
+  <div style="font-size:105px;line-height:1.3;filter:drop-shadow(0 0 18px #ff68d9);animation:pmBattement 2s ease-in-out infinite">
+    💖
+  </div>
+  <h2>P&M ♾️ Notre Infini</h2>
+  <p>Priscillia ♡ Mélanie</p>
+  <p>Depuis le 15 décembre 2024</p>
+</section>
+<style>
+@keyframes pmBattement {
+  0%,100% {transform:scale(1);filter:drop-shadow(0 0 12px #ff68d9)}
+  50% {transform:scale(1.12);filter:drop-shadow(0 0 32px #ff9cf0)}
+}
+</style>
+
 <div class="card">
 <h2>💖 Notre histoire</h2>
 <p>Priscillia & Mélanie</p>
