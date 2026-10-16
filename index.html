@@ -7,6 +7,86 @@
 <meta name="theme-color" content="#230d28">
 <title>P&M ♾️ Notre Infini</title>
 
+/* P&M : INTERFACE ROMANTIQUE PREMIUM */
+
+header {
+  background: linear-gradient(145deg,
+    rgba(91, 38, 102, .95),
+    rgba(51, 23, 70, .96));
+  border-bottom: 1px solid rgba(255, 173, 224, .22);
+  box-shadow: 0 8px 30px rgba(12, 4, 28, .2);
+}
+
+main {
+  width: min(100%, 680px);
+  margin: auto;
+  padding: 20px 16px 100px;
+}
+
+nav {
+  display: flex;
+  gap: 9px;
+  padding: 12px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+nav::-webkit-scrollbar {
+  display: none;
+}
+
+nav button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+nav button.active {
+  background: linear-gradient(135deg,
+    #ff75bc, #a45af0);
+  border: 2px solid #ffc2e7;
+  box-shadow: 0 0 18px rgba(255, 110, 191, .3);
+}
+
+.card {
+  border-radius: 24px;
+  padding: 23px;
+  background: linear-gradient(150deg,
+    rgba(77, 42, 89, .93),
+    rgba(35, 21, 51, .97));
+  border: 1px solid rgba(255, 176, 223, .22);
+  box-shadow: 0 14px 35px rgba(12, 3, 24, .26);
+}
+
+.card h2 {
+  font-size: clamp(19px, 5vw, 25px);
+  margin-bottom: 20px;
+}
+
+button {
+  min-height: 45px;
+}
+
+input, textarea, select {
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+@media (min-width: 700px) {
+  main {
+    padding-top: 28px;
+  }
+
+  .card {
+    padding: 28px;
+  }
+}
+
 <style>
 
 /* ======================================
