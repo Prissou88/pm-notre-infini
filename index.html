@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#230d28">
+<title>P&M ♾️ Notre Infini</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#542046,#160d21 65%);color:#fff;font-family:system-ui,Arial;min-height:100vh}
+header{text-align:center;padding:25px 12px;background:#ffffff0b}
+.logo{font-size:32px;font-weight:900;color:#ff91bd}
+small{color:#dcbdd7}
+main{max-width:650px;margin:auto;padding:18px}
+.card{background:#ffffff12;border:1px solid #ffffff20;border-radius:20px;padding:19px;margin-bottom:16px}
+h2{font-size:20px;margin:0 0 15px}
+input,textarea{width:100%;padding:13px;border:1px solid #b875a2;border-radius:12px;background:#180d23;color:white;font:inherit;margin:7px 0}
+textarea{min-height:90px;resize:vertical}
+button{background:linear-gradient(135deg,#fa639c,#a347ca);color:white;border:0;border-radius:13px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer;margin:4px}
+button:disabled{opacity:.5}
+button.secondary{background:#ffffff20}
+nav{display:flex;gap:4px;overflow:auto;padding:10px}
+nav button{flex:1;white-space:nowrap;font-size:12px;padding:10px}
+.msg{background:#ffffff13;padding:12px;border-radius:14px;margin:9px 0;overflow-wrap:anywhere}
+.mine{border-left:3px solid #ff81b4}
+.notice{color:#ffd6e8;font-size:13px}
+.hidden{display:none}
+.row{display:flex;flex-wrap:wrap;gap:5px}
+.stat{font-size:25px;font-weight:bold;color:#ffa3c9}
+#feedback{position:sticky;top:0;z-index:5;text-align:center;background:#743154;padding:10px;display:none}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">P&M ♾️</div>
+<div>Notre Infini ❤️</div>
+<small>Depuis le 15 décembre 2024</small>
+</header>
+<div id="feedback"></div>
+<main id="app">Chargement de notre univers...</main>
+
+<script type="module">
+import {createClient} from
+'https://esm.sh/@supabase/supabase-js@2';
+
+const db=createClient(
+'https://qgetfadmhwnbvajdxfpl.supabase.co',
+'sb_publishable_IO6GnkQdZuqjGpvVGWqPzA_qsadKGoz'
+);
+
+const app=document.getElementById('app');
+let user=null,couple=null,onglet='accueil';
+let abonnement=null;
+
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+
+function info(message){
+const el=document.getElementById('feedback');
+el.textContent=message;
+el.style.display='block';
+setTimeout(()=>el.style.display='none',5000);
+}
+function erreur(e){
+console.error(e);
+info('⚠️ '+(e?.message||String(e)));
+}
+async function rpc(n,args={}){
+const {data,error}=await db.rpc(n,args);
+if(error)throw error;
+return data;
+}
+async function verifier(){
+const {data:{user:u}}=await db.auth.getUser();
+user=u;
+if(!user){connexion();return}
+const {data,error}=await db.from('pm_members')
+.select('couple_id').eq('user_id',user.id).maybeSingle();
+if(error){erreur(error);return}
+couple=data?.couple_id||null;
+if(!couple){association();return}
+afficher();
+}
+function connexion(){
+app.innerHTML=`
+<div class="card">
+<h2>🔐 Notre espace privé</h2>
+<p>Chacune possède son propre compte.</p>
+<input id="email" type="email" placeholder="Adresse e-mail">
+<input id="password" type="password" placeholder="Mot de passe">
+<div class="row">
+<button id="login">Se connecter</button>
+<button id="signup" class="secondary">Créer mon compte</button>
+</div>
+<p class="notice">Utilise un mot de passe unique. Une confirmation par e-mail peut être nécessaire.</p>
+</div>`;
+document.getElementById('login').onclick=()=>auth(false);
+document.getElementById('signup').onclick=()=>auth(true);
+}
+async function auth(creer){
+const email=document.getElementById('email').value.trim();
+const password=document.getElementById('password').value;
+if(!email||!password){info('Remplis les deux champs.');return}
+try{
+const {error}=creer
+?await db.auth.signUp({email,password})
+:await db.auth.signInWithPassword({email,password});
+if(error)throw error;
+if(creer)info('Compte créé ! Vérifie ton e-mail si demandé.');
+await verifier();
+}catch(e){erreur(e)}
+}
+function association(){
+app.innerHTML=`
+<div class="card">
+<h2>💞 Bienvenue dans P&M</h2>
+<p>La première partenaire crée votre espace. La deuxième le rejoint avec un code.</p>
+<button id="create">Créer notre couple ❤️</button>
+</div>
+<div class="card">
+<h2>💌 Rejoindre ma femme</h2>
+<input id="invite" placeholder="Code d'invitation">
+<button id="join">Rejoindre notre infini</button>
+</div>
+<button id="logout" class="secondary">Déconnexion</button>`;
+document.getElementById('create').onclick=async()=>{
+try{await rpc('pm_create_couple');await verifier()}
+catch(e){erreur(e)}
+};
+document.getElementById('join').onclick=async()=>{
+try{
+await rpc('pm_join_partner',{
+p_code:document.getElementById('invite').value.trim()
+});
+await verifier();
+}catch(e){erreur(e)}
+};
+document.getElementById('logout').onclick=deconnexion;
+}
+async function deconnexion(){
+await db.auth.signOut();
+user=null;couple=null;
+connexion();
+}
+async function afficher(){
+if(!user||!couple)return;
+if(abonnement){await db.removeChannel(abonnement)}
+abonnement=db.channel('pm-'+couple)
+.on('postgres_changes',{
+event:'*',schema:'public',table:'pm_events',
+filter:'couple_id=eq.'+couple
+},()=>afficher())
+.on('postgres_changes',{
+event:'*',schema:'public',table:'pm_handcuffs',
+filter:'couple_id=eq.'+couple
+},()=>afficher())
+.subscribe();
+
+app.innerHTML=`
+<nav>
+<button data-tab="accueil">❤️ Accueil</button>
+<button data-tab="messages">💬 Messages</button>
+<button data-tab="humeurs">🌹 Humeurs</button>
+<button data-tab="intime">🔒 Intime</button>
+</nav>
+<section id="contenu"></section>
+<div style="text-align:center">
+<button id="refresh" class="secondary">↻ Actualiser</button>
+<button id="logout" class="secondary">Déconnexion</button>
+</div>`;
+document.querySelectorAll('[data-tab]').forEach(b=>
+b.onclick=()=>{onglet=b.dataset.tab;contenu()}
+);
+document.getElementById('refresh').onclick=contenu;
+document.getElementById('logout').onclick=deconnexion;
+await contenu();
+}
+async function contenu(){
+const el=document.getElementById('contenu');
+if(!el)return;
+el.innerHTML='<div class="card">Chargement... ❤️</div>';
+try{
+if(onglet==='accueil')await accueil(el);
+if(onglet==='messages')await messages(el);
+if(onglet==='humeurs')await humeurs(el);
+if(onglet==='intime')await intime(el);
+}catch(e){erreur(e);el.innerHTML='<div class="card">Impossible de charger cette rubrique.</div>'}
+}
+async function accueil(el){
+const {data:members,error:me}=await db.from('pm_members')
+.select('user_id').eq('couple_id',couple);
+if(me)throw me;
+const {data:events,error:ev}=await db.from('pm_events')
+.select('type').eq('couple_id',couple)
+.in('type',['tu_me_manques','je_taime_fort']);
+if(ev)throw ev;
+const count=t=>(events||[]).filter(x=>x.type===t).length;
+const {data:menottes,error:mh}=await db.from('pm_handcuffs')
+.select('*').eq('couple_id',couple).maybeSingle();
+if(mh)throw mh;
+el.innerHTML=`
+<div class="card">
+<h2>💖 Notre histoire</h2>
+<p>Priscillia & Mélanie</p>
+<p>Notre amour, notre refuge, notre infini ♾️</p>
+<p>Partenaires connectées : ${members?.length||0}/2</p>
+${members?.length===1?'<button id="inviteBtn">Inviter Mélanie 💌</button><div id="code"></div>':''}
+</div>
+<div class="card">
+<h2>💌 Nos petits mots</h2>
+<div class="row">
+<button id="miss">Tu me manques ❤️</button>
+<button id="love">Je t'aime fort 💖</button>
+</div>
+<p>❤️ Tu me manques : <span class="stat">${count('tu_me_manques')}</span></p>
+<p>💖 Je t'aime fort : <span class="stat">${count('je_taime_fort')}</span></p>
+</div>
+<div class="card">
+<h2>🔗 Mode Menottes</h2>
+<p>${menottes?.active?'🔒 Mise de menottes en cours':'🔓 Menottes retirées'}</p>
+<p>Nombre de mises : <span class="stat">${menottes?.activations||0}</span></p>
+<button id="cuffs">${menottes?.active?'Enlever les menottes':'Mettre les menottes 🔗'}</button>
+</div>`;
+const invite=document.getElementById('inviteBtn');
+if(invite)invite.onclick=async()=>{
+try{
+const code=await rpc('pm_create_partner_invite');
+document.getElementById('code').innerHTML=
+'<p>Code valable 24 heures :</p><div class="msg">'+esc(code)+'</div>';
+}catch(e){erreur(e)}
+};
+document.getElementById('miss').onclick=()=>coeur('tu_me_manques');
+document.getElementById('love').onclick=()=>coeur('je_taime_fort');
+document.getElementById('cuffs').onclick=async()=>{
+try{
+await rpc('pm_set_handcuffs',{p_active:!menottes?.active});
+await contenu();
+}catch(e){erreur(e)}
+};
+}
+async function coeur(type){
+try{
+await rpc('pm_send_heart',{p_type:type});
+info('Petit mot envoyé ❤️');
+await contenu();
+}catch(e){erreur(e)}
+}
+async function messages(el){
+const {data,error}=await db.from('pm_events')
+.select('id,sender_id,contenu,created_at')
+.eq('couple_id',couple).eq('type','message')
+.order('created_at',{ascending:false}).limit(100);
+if(error)throw error;
+const html=(data||[]).reverse().map(m=>`
+<div class="msg ${m.sender_id===user.id?'mine':''}">
+<small>${m.sender_id===user.id?'Moi':'Ma femme'} · ${new Date(m.created_at).toLocaleString('fr-FR')}</small>
+<div>${esc(m.contenu)}</div>
+</div>`).join('');
+el.innerHTML=`
+<div class="card">
+<h2>💬 Nos messages privés</h2>
+<div>${html||'<p>Votre première conversation vous attend ❤️</p>'}</div>
+<textarea id="texte" maxlength="3000" placeholder="Écris à ta femme..."></textarea>
+<button id="send">Envoyer 💌</button>
+</div>`;
+document.getElementById('send').onclick=async()=>{
+const contenu=document.getElementById('texte').value.trim();
+if(!contenu)return;
+try{
+const {error}=await db.from('pm_events').insert({
+couple_id:couple,sender_id:user.id,type:'message',contenu
+});
+if(error)throw error;
+await messages(el);
+}catch(e){erreur(e)}
+};
+}
+async function humeurs(el){
+const {data,error}=await db.from('pm_modes')
+.select('*').eq('couple_id',couple);
+if(error)throw error;
+const mes=(data||[]).filter(m=>m.user_id===user.id);
+const item=(mode,titre)=>{
+const m=mes.find(x=>x.mode===mode);
+return `<div class="card"><h2>${titre}</h2>
+<p>${m?.actif?'Activé':'Désactivé'}</p>
+<p>Compteur : ${m?.compteur||0}</p>
+<button data-mode="${mode}" data-active="${!m?.actif}">
+${m?.actif?'Désactiver':'Activer'}</button></div>`;
+};
+el.innerHTML=item('jalousie','🌹 Petite jalousie')
++item('prise_de_tete','🌩️ Prise de tête')
++'<p class="notice">Ces modes expriment une humeur. Ils ne remplacent pas une discussion.</p>';
+el.querySelectorAll('[data-mode]').forEach(b=>{
+b.onclick=async()=>{
+try{
+await rpc('pm_set_mode',{
+p_mode:b.dataset.mode,
+p_actif:b.dataset.active==='true'
+});
+await contenu();
+}catch(e){erreur(e)}
+};
+});
+}
+async function intime(el){
+const {data,error}=await db.from('pm_intimate_sessions')
+.select('*').eq('couple_id',couple)
+.order('created_at',{ascending:false}).limit(10);
+if(error)throw error;
+const active=(data||[]).find(s=>s.status==='active');
+const pending=(data||[]).find(s=>s.status==='pending');
+let html='<div class="card"><h2>🔒 Notre bulle intime</h2><p>Accessible seulement avec l’accord des deux partenaires. Chacune peut la fermer.</p>';
+if(active){
+html+='<p>❤️ Session ouverte</p><button id="close">Fermer la session</button>';
+}else if(pending){
+html+=pending.requested_by===user.id
+?'<p>💌 En attente de la réponse de ta femme.</p><button id="close">Annuler</button>'
+:'<p>💌 Ta femme souhaite ouvrir votre bulle.</p><button id="accept">Accepter</button><button id="decline" class="secondary">Refuser</button>';
+}else{
+html+='<button id="request">Proposer une session ❤️</button>';
+}
+html+='</div>';
+el.innerHTML=html;
+const request=document.getElementById('request');
+if(request)request.onclick=async()=>{
+try{await rpc('pm_invite_intimate');await contenu()}catch(e){erreur(e)}
+};
+const accept=document.getElementById('accept');
+if(accept)accept.onclick=()=>repondre(pending.id,true);
+const decline=document.getElementById('decline');
+if(decline)decline.onclick=()=>repondre(pending.id,false);
+const close=document.getElementById('close');
+if(close)close.onclick=async()=>{
+try{
+await rpc('pm_close_intimate',{p_session:(active||pending).id});
+await contenu();
+}catch(e){erreur(e)}
+};
+if(active)await messagesIntimes(el,active.id);
+}
+async function repondre(id,ok){
+try{
+await rpc('pm_respond_intimate',{
+p_session:id,p_accept:ok
+});
+await contenu();
+}catch(e){erreur(e)}
+}
+async function messagesIntimes(el,id){
+const {data,error}=await db.from('pm_intimate_messages')
+.select('sender_id,contenu,created_at')
+.eq('session_id',id)
+.order('created_at',{ascending:true}).limit(100);
+if(error)throw error;
+const card=document.createElement('div');
+card.className='card';
+card.innerHTML='<h2>💗 Notre conversation</h2>'
++(data||[]).map(m=>`
+<div class="msg ${m.sender_id===user.id?'mine':''}">
+<small>${m.sender_id===user.id?'Moi':'Ma femme'}</small>
+<div>${esc(m.contenu)}</div></div>`).join('')
++`<textarea id="intimeTexte" maxlength="3000" placeholder="Un mot rien que pour nous..."></textarea>
+<button id="intimeSend">Envoyer 🔒</button>`;
+el.appendChild(card);
+document.getElementById('intimeSend').onclick=async()=>{
+const contenu=document.getElementById('intimeTexte').value.trim();
+if(!contenu)return;
+try{
+const {error}=await db.from('pm_intimate_messages').insert({
+session_id:id,sender_id:user.id,contenu
+});
+if(error)throw error;
+await contenu();
+}catch(e){erreur(e)}
+};
+}
+db.auth.onAuthStateChange(()=>setTimeout(verifier,0));
+verifier();
+</script>
+</body>
+</html>
