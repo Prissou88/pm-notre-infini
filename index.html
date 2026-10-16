@@ -419,7 +419,13 @@ function ajouterCoeur(){
     el.textContent.toLowerCase().includes('notre histoire')
   );
 
-  if(!titre)return;
+  if(!titre){
+  const accueil=document.querySelector('#contenu .card');
+  if(accueil && !document.querySelector('.pm-amour')){
+    accueil.insertAdjacentHTML('afterbegin',coeurHTML);
+  }
+  return;
+}
 
   const carte=titre.closest('.card');
   if(!carte)return;
