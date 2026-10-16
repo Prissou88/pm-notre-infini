@@ -458,6 +458,7 @@ const accueil=texte.includes('accueil') ||
 
   function demarrer(){
 const cible=document.getElementById('app');
+    if(!cible)return;
     observateur.observe(cible,{
       childList:true,
       subtree:true
