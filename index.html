@@ -615,6 +615,65 @@ document.getElementById('refresh').onclick=contenu;
 document.getElementById('logout').onclick=deconnexion;
 await contenu();
 }
+
+/* TABLEAU DE BORD ROMANTIQUE P&M */
+function ajouterTableauDeBord(){
+  const accueil=document.getElementById('contenu');
+  if(!accueil)return;
+
+  const histoire=[...accueil.querySelectorAll('h2')]
+    .find(t=>t.textContent.includes('Notre histoire'));
+
+  if(!histoire)return;
+
+  if(accueil.querySelector('.pm-tableau'))return;
+
+  const cartes=[
+    ['💌','Messages','Nos petits mots','messages'],
+    ['🌹','Humeurs','Nos émotions','humeurs'],
+    ['📸','Souvenirs','Nos photos','photos'],
+    ['⚖️','Tribunal','Se comprendre','tribunal'],
+    ['🔐','Intimité','Notre espace secret','intime'],
+    ['🕊️','Réconciliation','Retrouver la paix','reconciliation']
+  ];
+
+  const section=document.createElement('section');
+  section.className='pm-tableau';
+
+  const titre=document.createElement('h2');
+  titre.textContent='💖 Notre petit univers';
+  section.appendChild(titre);
+
+  const grille=document.createElement('div');
+  grille.className='pm-grille';
+
+  cartes.forEach(([icone,nom,description,tab])=>{
+    const bouton=document.createElement('button');
+    bouton.type='button';
+    bouton.className='pm-tuile';
+
+    bouton.innerHTML=`
+      <span class="pm-icone">${icone}</span>
+      <span class="pm-nom">${nom}</span>
+      <span class="pm-description">${description}</span>
+    `;
+
+    bouton.onclick=()=>{
+      onglet=tab;
+      contenu();
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+
+    grille.appendChild(bouton);
+  });
+
+  section.appendChild(grille);
+
+  const carteHistoire=histoire.closest('.card');
+  if(carteHistoire){
+    carteHistoire.insertAdjacentElement('afterend',section);
+  }
+}
 async function contenu(){
 const el=document.getElementById('contenu');
 if(!el)return;
