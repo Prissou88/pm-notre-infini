@@ -87,6 +87,65 @@ input, textarea, select {
   }
 }
 
+/* ACCUEIL P&M : GRANDES CARTES */
+.pm-tableau {
+  margin: 22px 0;
+}
+
+.pm-tableau h2 {
+  text-align: center;
+  color: #ffe2f5;
+  margin-bottom: 16px;
+}
+
+.pm-grille {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+
+.pm-tuile {
+  min-width: 0;
+  min-height: 142px;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  text-align: left;
+  border-radius: 22px;
+  background: linear-gradient(145deg,#563064,#30203f);
+  border: 1px solid rgba(255,179,224,.35);
+  box-shadow: 0 10px 25px rgba(12,4,24,.22);
+}
+
+.pm-tuile:active {
+  transform: scale(.97);
+}
+
+.pm-tuile .pm-icone {
+  font-size: 30px;
+}
+
+.pm-tuile .pm-nom {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pm-tuile .pm-description {
+  font-size: 12px;
+  font-weight: 400;
+  color: #e5c7e9;
+}
+
+@media(max-width:350px) {
+  .pm-grille {gap:8px}
+  .pm-tuile {padding:12px 9px}
+  .pm-tuile .pm-nom {font-size:14px}
+}
+
 <style>
 
 /* ======================================
