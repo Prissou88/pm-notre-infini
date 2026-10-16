@@ -45,20 +45,6 @@ nav button{flex:1;white-space:nowrap;font-size:12px;padding:10px}
    Tribunal, photos et réconciliation
    ========================================= */
 
-const pmAncienAfficher = afficher;
-const pmAncienContenu = contenu;
-
-afficher = async function () {
-  await pmAncienAfficher();
-
-  const nav = document.querySelector("nav");
-  if (!nav) return;
-
-  const nouveaux = [
-    ["photos", "📸 Photos"],
-    ["tribunal", "⚖️ Tribunal"],
-    ["reconciliation", "💌 Réconciliation"]
-  ];
 
   for (const [id, nom] of nouveaux) {
     if (nav.querySelector('[data-tab="' + id + '"]')) continue;
