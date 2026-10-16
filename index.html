@@ -600,6 +600,67 @@ info('Tes modes sont désactivés 🕊️');
 };
 }
 
+  
+/* INVITES DU TRIBUNAL */
+
+async function inviterAuTribunal(affaire) {
+  const identifiant = prompt(
+    "Identifiant du compte P&M de l'invité :"
+  );
+  if (!identifiant) return;
+
+  const role = prompt(
+    "Rôle : avocat, temoin ou mediateur"
+  );
+  if (!role) return;
+
+  const roles = {
+    avocat: "avocat",
+    temoin: "temoin",
+    mediateur: "mediateur"
+  };
+
+  const choix = roles[role.trim().toLowerCase()];
+  if (!choix) {
+    info("Choisis avocat, temoin ou mediateur.");
+    return;
+  }
+
+  try {
+    await rpc("pm_invite_guest", {
+      p_dispute: affaire.id,
+      p_user: identifiant.trim(),
+      p_role: choix
+    });
+    info("Invitation créée ⚖️");
+  } catch (e) {
+    erreur(e);
+  }
+}
+
+async function approuverInvite(inviteId) {
+  try {
+    await rpc("pm_approve_guest", {
+      p_invite: inviteId
+    });
+    info("Ton accord est enregistré ❤️");
+  } catch (e) {
+    erreur(e);
+  }
+}
+
+async function revoquerInvite(inviteId) {
+  try {
+    await rpc("pm_revoke_guest", {
+      p_invite: inviteId
+    });
+    info("Accès de l'invité révoqué.");
+  } catch (e) {
+    erreur(e);
+  }
+}
+
+
 db.auth.onAuthStateChange(()=>setTimeout(verifier,0));
 verifier();
 </script>
