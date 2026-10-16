@@ -529,6 +529,11 @@ ${affaire.status==='open'?`
 </div>`;
 
 document.getElementById('retourTribunal').onclick=()=>contenu();
+  
+const boutonInvite=document.createElement('button');
+boutonInvite.textContent='⚖️ Inviter un avocat, témoin ou médiateur';
+boutonInvite.onclick=()=>inviterAuTribunal(affaire);
+document.getElementById('retourTribunal').after(boutonInvite);
 const paroles=document.getElementById('paroles');
 for(const message of data||[]){
 const div=document.createElement('div');
