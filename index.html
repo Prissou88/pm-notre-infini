@@ -680,7 +680,12 @@ if(!el)return;
 document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===onglet));
 el.innerHTML='<div class="card">Chargement... ❤️</div>';
 try{
-if(onglet==='accueil')await accueil(el);
+
+if(onglet==='accueil'){
+  await accueil(el);
+  ajouterTableauDeBord();
+}
+
 else if(onglet==='messages')await messages(el);
 else if(onglet==='humeurs')await humeurs(el);
 else if(onglet==='intime')await intime(el);
