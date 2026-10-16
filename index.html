@@ -269,7 +269,27 @@ nav button.active{outline:2px solid #ff91bd}
     </section>
   `;
 
-  function ajouterCoeur(){
+
+function ajouterCoeur(){
+  const app=document.getElementById('app');
+  if(!app)return;
+
+  const titres=app.querySelectorAll('h2');
+
+  const titre=[...titres].find(el=>
+    el.textContent.toLowerCase().includes('notre histoire')
+  );
+
+  if(!titre)return;
+
+  const carte=titre.closest('.card');
+  if(!carte)return;
+
+  if(document.querySelector('.pm-amour'))return;
+
+  carte.insertAdjacentHTML('beforebegin',coeurHTML);
+}
+
 
     const cible=document.getElementById('app');
      if(!cible)return;
