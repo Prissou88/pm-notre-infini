@@ -752,6 +752,28 @@ async function revoquerInvite(inviteId) {
 }
 
 
+/* ACCES INVITE AU TRIBUNAL */
+function ajouterAccesInvite(){
+  const bouton=document.createElement('button');
+  bouton.className='secondary';
+  bouton.textContent='⚖️ Accéder à mes invitations au Tribunal';
+
+  bouton.onclick=()=>espaceInvite();
+
+  const carte=document.createElement('div');
+  carte.className='card';
+
+  const titre=document.createElement('h3');
+  titre.textContent='Espace invité';
+
+  const description=document.createElement('p');
+  description.textContent=
+    'Tu as été invité comme avocat, témoin ou médiateur ?';
+
+  carte.append(titre,description,bouton);
+  app.appendChild(carte);
+}
+
 db.auth.onAuthStateChange(()=>setTimeout(verifier,0));
 verifier();
 </script>
