@@ -73,9 +73,9 @@ return data;
 }
 async function verifier(){
 try{
-const {data:{user:u},error:ae}=await db.auth.getUser();
+const {data:{session},error:ae}=await db.auth.getSession();
 if(ae)throw ae;
-user=u;
+user=session?.user||null;
 if(!user){connexion();return}
 const {data,error}=await db.from('pm_members')
 .select('couple_id').eq('user_id',user.id).maybeSingle();
