@@ -6,6 +6,162 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#230d28">
 <title>P&M ♾️ Notre Infini</title>
+
+/* ======================================
+   P&M ♾️ NOTRE INFINI
+   DESIGN ROMANTIQUE CRISTAL
+====================================== */
+
+:root {
+  color-scheme: dark;
+  --pm-rose: #ff8dca;
+  --pm-violet: #a76bfa;
+  --pm-blanc: #fff0fa;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--pm-blanc);
+  background:
+    radial-gradient(circle at 15% 10%,
+      rgba(255, 85, 181, .20), transparent 35%),
+    radial-gradient(circle at 85% 35%,
+      rgba(145, 73, 242, .22), transparent 40%),
+    linear-gradient(150deg, #170b28, #2b163e, #10091d);
+  background-attachment: fixed;
+}
+
+h1, h2, h3 {
+  color: #ffe2f4;
+  text-shadow: 0 0 16px rgba(255, 112, 196, .20);
+}
+
+.card {
+  background: linear-gradient(145deg,
+    rgba(73, 38, 91, .94),
+    rgba(32, 18, 51, .96));
+  border: 1px solid rgba(255, 181, 227, .25);
+  border-radius: 22px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 30px rgba(8, 2, 20, .3);
+}
+
+button {
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(120deg, #d950aa, #9257e9);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 5px 18px rgba(213, 80, 170, .22);
+  transition: transform .2s ease;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+button.secondary {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 182, 226, .3);
+  color: #ffe2f4;
+}
+
+input, textarea, select {
+  color: white;
+  background: rgba(19, 10, 33, .7);
+  border: 1px solid rgba(255, 166, 220, .3);
+  border-radius: 14px;
+}
+
+.msg {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255, 172, 221, .14);
+  border-radius: 16px;
+}
+
+/* COEUR EN CRISTAL LUMINEUX */
+
+.pm-amour {
+  position: relative;
+  max-width: 360px;
+  margin: 15px auto 25px;
+  padding: 16px 8px 22px;
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.pm-amour::before {
+  content: "";
+  position: absolute;
+  width: 270px;
+  height: 270px;
+  left: 50%;
+  top: 36px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle,
+    rgba(255, 71, 173, .45),
+    rgba(158, 78, 250, .19) 50%,
+    transparent 73%);
+  filter: blur(18px);
+  z-index: -1;
+  animation: pmRespiration 3s ease-in-out infinite;
+}
+
+.pm-coeur {
+  width: min(100%, 310px);
+  display: block;
+  margin: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0 15px rgba(255, 104, 191, .65));
+  animation: pmBattement 2.3s ease-in-out infinite;
+}
+
+.pm-etoile {
+  transform-origin: center;
+  animation: pmScintille 2s ease-in-out infinite alternate;
+}
+
+.pm-etoile:nth-of-type(even) {
+  animation-delay: .8s;
+}
+
+.pm-amour h2 {
+  margin: 0 0 6px;
+  font-size: 25px;
+  color: #ffe3f5;
+}
+
+.pm-amour p {
+  margin: 4px 0;
+  color: #e9c4e7;
+}
+
+@keyframes pmBattement {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.065); }
+  55% { transform: scale(1.025); }
+  68% { transform: scale(1.07); }
+}
+
+@keyframes pmRespiration {
+  0%, 100% { opacity: .6; }
+  50% { opacity: 1; }
+}
+
+@keyframes pmScintille {
+  from { opacity: .3; transform: scale(.7); }
+  to { opacity: 1; transform: scale(1.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-coeur,
+  .pm-etoile,
+  .pm-amour::before {
+    animation: none;
+  }
+}
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(circle at top,#542046,#160d21 65%);color:#fff;font-family:system-ui,Arial;min-height:100vh}
@@ -32,6 +188,122 @@ nav button.active{outline:2px solid #ff91bd}
 .photo{width:100%;border-radius:15px;display:block}
 </style>
 </head>
+
+<script>
+/* DECORATION AUTOMATIQUE DE L'ACCUEIL P&M */
+(function(){
+  const coeurHTML = `
+    <section class="pm-amour" aria-label="Notre amour">
+      <svg class="pm-coeur" viewBox="0 0 340 290"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pmCristal" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffe5f7"/>
+            <stop offset="28%" stop-color="#ff9bd4"/>
+            <stop offset="62%" stop-color="#ef51b2"/>
+            <stop offset="100%" stop-color="#7936c8"/>
+          </linearGradient>
+          <linearGradient id="pmReflet" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"
+                  stop-opacity=".8"/>
+            <stop offset="100%" stop-color="#ffffff"
+                  stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="170" cy="142" r="127"
+                fill="#f64cba" opacity=".08"/>
+
+        <path d="M170 253 C137 222 60 172 60 111
+                 C60 58 124 43 170 97
+                 C216 43 280 58 280 111
+                 C280 172 203 222 170 253Z"
+              fill="url(#pmCristal)"
+              stroke="#ffe1f5"
+              stroke-width="2.5"/>
+
+        <path d="M170 97 C123 43 60 58 60 111
+                 C60 151 93 179 119 204
+                 C100 143 111 92 170 97Z"
+              fill="url(#pmReflet)" opacity=".5"/>
+
+        <path d="M170 102 L170 239
+                 M72 113 L170 102 L268 113
+                 M119 204 L170 239 L221 204"
+              fill="none"
+              stroke="#fff0fb"
+              stroke-opacity=".2"
+              stroke-width="1.5"/>
+
+        <text x="170" y="158" text-anchor="middle"
+              fill="white" font-size="43"
+              font-weight="bold">P&amp;M</text>
+
+        <text x="170" y="193" text-anchor="middle"
+              fill="white" font-size="30">∞</text>
+
+        <path class="pm-etoile"
+              d="M62 54 L67 67 L80 72 L67 77
+                 L62 90 L57 77 L44 72 L57 67Z"
+              fill="#ffe5f7"/>
+
+        <path class="pm-etoile"
+              d="M284 192 L288 201 L297 205
+                 L288 209 L284 218 L280 209
+                 L271 205 L280 201Z"
+              fill="#ffe5f7"/>
+
+        <circle class="pm-etoile" cx="265" cy="48"
+                r="3" fill="#ffe5f7"/>
+        <circle class="pm-etoile" cx="49" cy="180"
+                r="2.5" fill="#ffe5f7"/>
+        <circle class="pm-etoile" cx="305" cy="125"
+                r="2" fill="#ffe5f7"/>
+      </svg>
+
+      <h2>P&amp;M ♾️ Notre Infini</h2>
+      <p>Priscillia ♡ Mélanie</p>
+      <p>Depuis le 15 décembre 2024</p>
+    </section>
+  `;
+
+  function ajouterCoeur(){
+    const cible=document.getElementById('contenu');
+    if(!cible)return;
+
+    const titre=cible.querySelector('h1,h2');
+    if(!titre)return;
+
+    const texte=titre.textContent.toLowerCase();
+    const accueil=texte.includes('accueil') ||
+                  texte.includes('notre infini') ||
+                  texte.includes('bienvenue');
+
+    if(!accueil)return;
+    if(cible.querySelector('.pm-amour'))return;
+
+    cible.insertAdjacentHTML('afterbegin',coeurHTML);
+  }
+
+  const observateur=new MutationObserver(ajouterCoeur);
+
+  function demarrer(){
+    const cible=document.getElementById('contenu');
+    if(!cible)return;
+    observateur.observe(cible,{
+      childList:true,
+      subtree:false
+    });
+    ajouterCoeur();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',demarrer);
+  }else{
+    demarrer();
+  }
+})();
+</script>
 <body>
 <header>
 <div class="logo">P&M ♾️</div>
