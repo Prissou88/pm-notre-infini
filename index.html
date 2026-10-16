@@ -530,6 +530,92 @@ ${affaire.status==='open'?`
 
 document.getElementById('retourTribunal').onclick=()=>contenu();
   
+/* VALIDATION DES INVITES DU TRIBUNAL */
+const zoneInvites=document.createElement('div');
+zoneInvites.className='card';
+zoneInvites.innerHTML='<h2>👩‍⚖️ Invités du Tribunal</h2><p>Chargement des invitations...</p>';
+document.getElementById('retourTribunal')
+.closest('.card').after(zoneInvites);
+
+async function chargerInvites(){
+  const {data:invites,error}=await db
+    .from('pm_guest_invites')
+    .select('id,invited_user,role,accepted_at,revoked_at')
+    .eq('dispute_id',affaire.id);
+
+  if(error)throw error;
+
+  const ids=(invites||[]).map(x=>x.id);
+  let accords=[];
+
+  if(ids.length){
+    const res=await db.from('pm_guest_approvals')
+      .select('invite_id,user_id')
+      .in('invite_id',ids);
+    if(res.error)throw res.error;
+    accords=res.data||[];
+  }
+
+  zoneInvites.innerHTML='<h2>👩‍⚖️ Invités du Tribunal</h2>';
+
+  if(!invites?.length){
+    zoneInvites.insertAdjacentHTML('beforeend',
+      '<p>Aucun invité pour cette affaire.</p>');
+    return;
+  }
+
+  for(const invite of invites){
+    const carte=document.createElement('div');
+    carte.className='msg';
+
+    const texte=document.createElement('p');
+    const nombre=accords.filter(a=>a.invite_id===invite.id).length;
+
+    texte.textContent=
+      invite.role+' · '+nombre+' accord(s) enregistré(s)'+
+      (invite.accepted_at?' · Invitation acceptée':' · En attente')+
+      (invite.revoked_at?' · Accès révoqué':'');
+
+    carte.appendChild(texte);
+
+    if(!invite.revoked_at){
+      const deja=accords.some(a=>
+        a.invite_id===invite.id && a.user_id===user.id
+      );
+
+      if(!deja){
+        const approuver=document.createElement('button');
+        approuver.textContent=
+          invite.invited_user===user.id
+          ? 'Accepter mon invitation ❤️'
+          : 'Donner mon accord ❤️';
+
+        approuver.onclick=async()=>{
+          await approuverInvite(invite.id);
+          await chargerInvites();
+        };
+        carte.appendChild(approuver);
+      }
+
+      if(invite.invited_user!==user.id){
+        const retirer=document.createElement('button');
+        retirer.className='secondary';
+        retirer.textContent='Révoquer cet invité';
+        retirer.onclick=async()=>{
+          if(!confirm('Révoquer cet invité ?'))return;
+          await revoquerInvite(invite.id);
+          await chargerInvites();
+        };
+        carte.appendChild(retirer);
+      }
+    }
+
+    zoneInvites.appendChild(carte);
+  }
+}
+
+chargerInvites().catch(erreur);
+
 const boutonInvite=document.createElement('button');
 boutonInvite.textContent='⚖️ Inviter un avocat, témoin ou médiateur';
 boutonInvite.onclick=()=>inviterAuTribunal(affaire);
